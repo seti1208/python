@@ -1,0 +1,19 @@
+#!/usr/bin/env python
+import os, re, string
+import paramiko
+ssh=paramiko.SSHClient()
+private_key = "/root/.ssh/id_dsa"
+private_key_file = os.path.expanduser(private_key)
+rsa_key = paramiko.RSAKey.from_private_key_file(private_key_file)
+spisok = open("/var/www/cgi-bin/vm.txt", "rU").xreadlines()
+for line in spisok:
+        a = line.replace('\n', '')
+        b = string.split(a, ' ')
+        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        ssh.connect(b[1],pkey = rsa_key)
+        stdin, stdout, stderr = ssh.exec_command("df -mP | egrep -v 'tmpfs|Filesystem' | sed -e 's/\/dev\///g' | awk '{print $2, $3, $5, $6}'")
+        result = stdout.read() + stderr.read()
+	print '\n'
+        print a 
+        print result
+spisok.close()
